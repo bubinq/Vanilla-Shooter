@@ -3,7 +3,11 @@ const board = document.getElementsByClassName("board")[0];
 const player = document.getElementsByClassName("player")[0];
 const circle = document.getElementsByClassName("circle")[0];
 const bullet = document.getElementsByClassName("bullet")[0];
+const enemyBullet = document.getElementsByClassName("enemyBullet")[0];
 const overlay = document.getElementsByClassName("overlay")[0];
+const shot = document.querySelector("audio")
+
+shot.load()
 
 let mainLoop;
 let game30;
@@ -18,6 +22,15 @@ const bulletPos = {
     y: 0,
   },
 };
+const enemyBulletPos = {
+  x: -2000,
+  y: -2000,
+  deg: 0,
+  velocity: {
+    x: 0,
+    y: 0,
+  },
+}
 const position = {
   x: 100,
   y: 100,
@@ -54,10 +67,26 @@ function checkBoardCollision() {
 function spawnCircle() {
   circlePos.x =
     Math.random() *
-    (board.getClientRects()[0].width - circle.getClientRects()[0].width);
+    (board.getClientRects()[0].width / 2 - circle.getClientRects()[0].width);
   circlePos.y =
     Math.random() *
-    (board.getClientRects()[0].height - circle.getClientRects()[0].height);
+    (board.getClientRects()[0].height / 2 - circle.getClientRects()[0].height);
+}
+
+function fireEnemyBullets() {
+  let target = Math.atan2(position.y + player_H/2 - circlePos.y, position.x + player_H/2 - circlePos.x)
+  let angleinDegrees =
+    (Math.atan2(position.y + 15 - circlePos.y, position.x + 15 - circlePos.x) * 180) / Math.PI +
+    180;
+
+  const velocity = {
+    x: Math.cos(target) * Math.random() * 30,
+    y: Math.sin(target) * Math.random() * 30
+  }
+  enemyBulletPos.x = circlePos.x
+  enemyBulletPos.y = circlePos.y
+  enemyBulletPos.deg = angleinDegrees
+  enemyBulletPos.velocity = velocity
 }
 
 const SPEED = 3;
@@ -98,6 +127,12 @@ function moveBullet() {
   bullet.style.top = `${(bulletPos.y = bulletPos.y + bulletPos.velocity.y)}px`;
 }
 
+function moveEnemeyBullets() {
+  enemyBullet.style.rotate = `${enemyBulletPos.deg + 90}deg`;
+  enemyBullet.style.left = `${(enemyBulletPos.x = enemyBulletPos.x + enemyBulletPos.velocity.x)}px`;
+  enemyBullet.style.top = `${(enemyBulletPos.y = enemyBulletPos.y + enemyBulletPos.velocity.y)}px`;
+}
+
 function moveCircle() {
   circle.style.left = `${circlePos.x}px`;
   circle.style.top = `${circlePos.y}px`;
@@ -111,6 +146,7 @@ function movePlayer() {
 function main() {
   moveBullet();
   moveCircle();
+  moveEnemeyBullets();
   movePlayer();
 
   if (bullets.length >= 3) {
@@ -130,6 +166,7 @@ mainLoop = setInterval(() => {
 
 game30 = setInterval(() => {
   spawnCircle();
+  fireEnemyBullets();
 }, 1000);
 
 function reloadBullets() {
@@ -138,6 +175,7 @@ function reloadBullets() {
 }
 
 function fireBullets(ev) {
+  shot.currentTime = 0
   const x = ev.clientX;
   const y = ev.clientY;
   const playerHorCentre = position.x + player_W / 2;
@@ -159,6 +197,7 @@ function fireBullets(ev) {
   bulletPos.velocity = velocity;
 
   bullets.push(bulletPos);
+  shot.play()
 }
 
 setInterval(reloadBullets, 1500);

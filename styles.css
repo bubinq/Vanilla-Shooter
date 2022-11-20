@@ -31,6 +31,12 @@ body {
     z-index: -10;
     user-select: none;
 }
+
+.enemyBullet {
+    position: absolute;
+    z-index: -10;
+    user-select: none;
+}
 img {
     user-select: none;
     width: 30px;
