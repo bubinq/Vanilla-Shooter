@@ -7,7 +7,7 @@ const overlay = document.getElementsByClassName("overlay")[0];
 
 let mainLoop;
 let game30;
-let bullets = []
+let bullets = [];
 
 const bulletPos = {
   x: -2000,
@@ -31,29 +31,33 @@ function checkBoardCollision() {
   if (keys.up) {
     position.y -= SPEED;
     if (position.y < 0) {
-      position.y = 700 - player_H;
+      position.y = board.getClientRects()[0].height - player_H;
     }
   } else if (keys.down) {
     position.y += SPEED;
-    if (position.y > 700 - player_H) {
+    if (position.y > board.getClientRects()[0].height - player_H) {
       position.y = 0;
     }
   } else if (keys.left) {
     position.x -= SPEED;
     if (position.x < 0) {
-      position.x = 700 - player_W;
+      position.x = board.getClientRects()[0].width- player_W;
     }
   } else if (keys.right) {
     position.x += SPEED;
-    if (position.x > 700 - player_W) {
+    if (position.x > board.getClientRects()[0].width - player_W) {
       position.x = 0;
     }
   }
 }
 
 function spawnCircle() {
-  circlePos.x = Math.floor(Math.random() * 650);
-  circlePos.y = Math.floor(Math.random() * 650);
+  circlePos.x =
+    Math.random() *
+    (board.getClientRects()[0].width - circle.getClientRects()[0].width);
+  circlePos.y =
+    Math.random() *
+    (board.getClientRects()[0].height - circle.getClientRects()[0].height);
 }
 
 const SPEED = 3;
@@ -67,33 +71,28 @@ const keys = {
   right: false,
 };
 function checkWin() {
-  const width = circle.getClientRects()[0].width
-  const height = circle.getClientRects()[0].height 
+  const width = circle.getClientRects()[0].width;
+  const height = circle.getClientRects()[0].height;
   if (width > 2 && height > 2) {
-    overlay.classList.add("invisible")
+    overlay.classList.add("invisible");
   } else {
-    overlay.classList.remove("invisible")
-    clearInterval(mainLoop)
+    overlay.classList.remove("invisible");
+    clearInterval(mainLoop);
     setTimeout(() => {
       if (window.confirm("Play again?")) {
-        location.reload()
-    }
-    }, 2000)
+        location.reload();
+      }
+    }, 2000);
   }
-  
 }
 function checkStrike() {
-  if(bulletPos.x < circlePos.x + circle.getClientRects()[0].width &&
-    bulletPos.x + bullet.getClientRects()[0].width - 10 > circlePos.x &&
-    bulletPos.y < circlePos.y + circle.getClientRects()[0].height &&
-    bullet.getClientRects()[0].height - 10 + bulletPos.y > circlePos.y) {
-  
-    return true
+  const dist = Math.hypot(circlePos.x - bulletPos.x, circlePos.y - bulletPos.y)
+  if (dist - (circle.getClientRects()[0].width / 2) - (bullet.getClientRects()[0].width / 2) < 1) {
+    return true;
   }
 }
 
-function moveBullet () {
-  console.log(bulletPos.velocity);
+function moveBullet() {
   bullet.style.rotate = `${bulletPos.deg + 90}deg`;
   bullet.style.left = `${(bulletPos.x = bulletPos.x + bulletPos.velocity.x)}px`;
   bullet.style.top = `${(bulletPos.y = bulletPos.y + bulletPos.velocity.y)}px`;
@@ -110,23 +109,23 @@ function movePlayer() {
 }
 
 function main() {
-  moveBullet()
-  moveCircle()
-  movePlayer()
+  moveBullet();
+  moveCircle();
+  movePlayer();
 
-  if(bullets.length >= 3) {
-    board.removeEventListener("mousedown", fireBullets)
+  if (bullets.length >= 3) {
+    board.removeEventListener("mousedown", fireBullets);
   }
   checkBoardCollision();
   if (checkStrike()) {
-    circle.style.width = `${(circle.getClientRects()[0].width - 0.5)}px`;
-    circle.style.height = `${(circle.getClientRects()[0].height - 0.5)}px`;
+    circle.style.width = `${circle.getClientRects()[0].width - 0.5}px`;
+    circle.style.height = `${circle.getClientRects()[0].height - 0.5}px`;
   }
-  checkWin()
+  checkWin();
 }
 
 mainLoop = setInterval(() => {
-  main()
+  main();
 }, 1000 / 60);
 
 game30 = setInterval(() => {
@@ -134,8 +133,8 @@ game30 = setInterval(() => {
 }, 1000);
 
 function reloadBullets() {
-  bullets = []
-  board.addEventListener("mousedown", fireBullets)
+  bullets = [];
+  board.addEventListener("mousedown", fireBullets);
 }
 
 function fireBullets(ev) {
@@ -147,8 +146,8 @@ function fireBullets(ev) {
   let angleInRadiants = Math.atan2(y - playerVertCentre, x - playerHorCentre);
 
   const velocity = {
-    x: Math.cos(angleInRadiants) * 15,
-    y: Math.sin(angleInRadiants) * 15,
+    x: Math.cos(angleInRadiants) * 30,
+    y: Math.sin(angleInRadiants) * 30,
   };
   let angleinDegrees =
     (Math.atan2(playerVertCentre - y, playerHorCentre - x) * 180) / Math.PI +
@@ -159,10 +158,10 @@ function fireBullets(ev) {
   bulletPos.y = position.y;
   bulletPos.velocity = velocity;
 
-  bullets.push(bulletPos)
+  bullets.push(bulletPos);
 }
 
-setInterval(reloadBullets, 1500)
+setInterval(reloadBullets, 1500);
 
 board.addEventListener("mousedown", fireBullets);
 
