@@ -5,13 +5,16 @@ const circle = document.getElementsByClassName("circle")[0];
 const bullet = document.getElementsByClassName("bullet")[0];
 const enemyBullet = document.getElementsByClassName("enemyBullet")[0];
 const overlay = document.getElementsByClassName("overlay")[0];
-const shot = document.querySelector("audio")
+const shot = document.querySelector("audio");
+const healthBar = document.querySelector("rect");
+const winMsg = document.querySelector(".winMsg");
 
-shot.load()
+shot.load();
 
 let mainLoop;
 let game30;
 let bullets = [];
+let hpBar = 920;
 
 const bulletPos = {
   x: -2000,
@@ -30,10 +33,10 @@ const enemyBulletPos = {
     x: 0,
     y: 0,
   },
-}
+};
 const position = {
-  x: 100,
-  y: 100,
+  x: 600,
+  y: 600,
 };
 
 const circlePos = {
@@ -54,7 +57,7 @@ function checkBoardCollision() {
   } else if (keys.left) {
     position.x -= SPEED;
     if (position.x < 0) {
-      position.x = board.getClientRects()[0].width- player_W;
+      position.x = board.getClientRects()[0].width - player_W;
     }
   } else if (keys.right) {
     position.x += SPEED;
@@ -74,19 +77,24 @@ function spawnCircle() {
 }
 
 function fireEnemyBullets() {
-  let target = Math.atan2(position.y + player_H/2 - circlePos.y, position.x + player_H/2 - circlePos.x)
+  let target = Math.atan2(
+    position.y + player_H / 2 - circlePos.y,
+    position.x + player_H / 2 - circlePos.x
+  );
   let angleinDegrees =
-    (Math.atan2(position.y + 15 - circlePos.y, position.x + 15 - circlePos.x) * 180) / Math.PI +
+    (Math.atan2(position.y + 15 - circlePos.y, position.x + 15 - circlePos.x) *
+      180) /
+      Math.PI +
     180;
 
   const velocity = {
-    x: Math.cos(target) * Math.random() * 30,
-    y: Math.sin(target) * Math.random() * 30
-  }
-  enemyBulletPos.x = circlePos.x
-  enemyBulletPos.y = circlePos.y
-  enemyBulletPos.deg = angleinDegrees
-  enemyBulletPos.velocity = velocity
+    x: Math.cos(target) * 25,
+    y: Math.sin(target) * 25,
+  };
+  enemyBulletPos.x = circlePos.x;
+  enemyBulletPos.y = circlePos.y;
+  enemyBulletPos.deg = angleinDegrees;
+  enemyBulletPos.velocity = velocity;
 }
 
 const SPEED = 3;
@@ -114,9 +122,42 @@ function checkWin() {
     }, 2000);
   }
 }
+
+function checkLoss() {
+  if (hpBar >= 999) {
+    winMsg.children[0].textContent = "You lost"
+    overlay.classList.remove("invisible");
+    clearInterval(mainLoop);
+    setTimeout(() => {
+      if (window.confirm("Play again?")) {
+        location.reload();
+      }
+    }, 2000);
+  }
+}
+
+function checkEnemyStrike() {
+  const dist = Math.hypot(
+    position.x - enemyBulletPos.x,
+    position.y - enemyBulletPos.y
+  );
+  if (
+    dist -
+      player.getClientRects()[0].width / 2 -
+      enemyBullet.getClientRects()[0].width / 2 <
+    1
+  ) {
+    return true;
+  }
+}
 function checkStrike() {
-  const dist = Math.hypot(circlePos.x - bulletPos.x, circlePos.y - bulletPos.y)
-  if (dist - (circle.getClientRects()[0].width / 2) - (bullet.getClientRects()[0].width / 2) < 1) {
+  const dist = Math.hypot(circlePos.x - bulletPos.x, circlePos.y - bulletPos.y);
+  if (
+    dist -
+      circle.getClientRects()[0].width / 2 -
+      bullet.getClientRects()[0].width / 2 <
+    1
+  ) {
     return true;
   }
 }
@@ -129,8 +170,10 @@ function moveBullet() {
 
 function moveEnemeyBullets() {
   enemyBullet.style.rotate = `${enemyBulletPos.deg + 90}deg`;
-  enemyBullet.style.left = `${(enemyBulletPos.x = enemyBulletPos.x + enemyBulletPos.velocity.x)}px`;
-  enemyBullet.style.top = `${(enemyBulletPos.y = enemyBulletPos.y + enemyBulletPos.velocity.y)}px`;
+  enemyBullet.style.left = `${(enemyBulletPos.x =
+    enemyBulletPos.x + enemyBulletPos.velocity.x)}px`;
+  enemyBullet.style.top = `${(enemyBulletPos.y =
+    enemyBulletPos.y + enemyBulletPos.velocity.y)}px`;
 }
 
 function moveCircle() {
@@ -157,7 +200,12 @@ function main() {
     circle.style.width = `${circle.getClientRects()[0].width - 0.5}px`;
     circle.style.height = `${circle.getClientRects()[0].height - 0.5}px`;
   }
+  if (checkEnemyStrike()) {
+    hpBar += 1;
+    healthBar.style.strokeDashoffset = hpBar;
+  }
   checkWin();
+  checkLoss();
 }
 
 mainLoop = setInterval(() => {
@@ -175,7 +223,7 @@ function reloadBullets() {
 }
 
 function fireBullets(ev) {
-  shot.currentTime = 0
+  shot.currentTime = 0;
   const x = ev.clientX;
   const y = ev.clientY;
   const playerHorCentre = position.x + player_W / 2;
@@ -197,7 +245,7 @@ function fireBullets(ev) {
   bulletPos.velocity = velocity;
 
   bullets.push(bulletPos);
-  shot.play()
+  shot.play();
 }
 
 setInterval(reloadBullets, 1500);

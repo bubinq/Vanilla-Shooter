@@ -47,6 +47,18 @@ body {
     overflow: hidden;
 }
 
+.health {
+    position: absolute;
+    top: -100%;
+}
+
+.health rect {
+    stroke: rgb(32, 204, 32);
+    stroke-width: 100%;
+    stroke-dasharray: 1000;
+    stroke-dashoffset:920;
+}
+
 .overlay {
     display: flex;
     justify-content: center;
